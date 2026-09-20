@@ -48,6 +48,14 @@ And validate a mod:
 pzkit validate /path/to/YourMod
 ```
 
+Or check a single name before you commit it:
+
+```bash
+python3 tools/pz-bible/build_refs.py --game "$PZ_DIR" --out tools/pz-bible/refs
+python3 tools/pz-bible/pz_verify.py item Base.Axe        # OK
+python3 tools/pz-bible/pz_verify.py any  OnZombieSpawn   # NOT FOUND, with suggestions
+```
+
 Validation covers mod layout, script DSL syntax, references against the vanilla
 index, translation files, and Lua (via luacheck if present). **Stages that
 cannot run skip loudly** — a missing index or a missing Lua toolchain reports as
@@ -67,7 +75,9 @@ SKIPPED, never as a silent pass. Green means checked.
 | `pzkit/mcp_server.py` | MCP server, so an AI assistant can query the index instead of guessing names. |
 | `tools/probe/` | Read-only probes over vanilla data: the global API surface, level-0 craft recipes, timed actions, the foraging schema, radio data, icon and model inventories. |
 | `tools/art/` | Icon pipeline. PZ inventory icons are 32x32 and most art dies at that size; these build at 64, downscale, and show you the result at true size on a dark panel before you believe it. |
-| `tools/ws_deploy.ps1` | One-command Steam Workshop publish via SteamCMD (Windows). Never stores or reads a password — SteamCMD caches credentials after one interactive login. |
+| `tools/pz-bible/` | Ground-truth name checking. `build_refs.py` extracts every string-keyed name from your install (~110k from vanilla, ~25s); `pz_verify.py` checks candidates against them. See [its README](tools/pz-bible/README.md). |
+| `tools/publish/` | Steam Workshop publishing driven by one config file: metadata, staging from a git ref, first publish with id write-back, and pushes. See [its README](tools/publish/README.md). |
+| `tools/ws_deploy.ps1` | Standalone one-command Workshop publish, for a single mod folder with no config. Never stores or reads a password — SteamCMD caches credentials after one interactive login. |
 | `tools/hallucination_sweep.py` | Standalone reference sweep for script references to things that do not exist. |
 
 ## Configuration
@@ -99,11 +109,18 @@ The boot-test rig assumes a WSL2 install with the dedicated server under
 
 ## A note on ground truth
 
-The index is built from *your* install, on purpose. This repo ships no
-extracted game data: name lists go stale the moment the game updates, and a
-stale list that looks authoritative is worse than no list. Rebuild after every
-game update — `refcheck` will tell you when the index is older than the build
-it is checking against.
+Both the index and the pz-bible name lists are built from *your* install, on
+purpose. This repo ships no extracted game data at all: name lists go stale the
+moment the game updates, and a stale list that looks authoritative is worse than
+no list — it produces confident wrong answers in both directions. Rebuild after
+every game update; `refcheck` will tell you when the index is older than the
+build it is checking against.
+
+The two layers answer different questions. `pzkit index` parses script data into
+a queryable database — what consumes this item, what produces it, what uses this
+sprite. `tools/pz-bible` answers the narrower one that causes most silent
+failures: *does this name exist at all*, across 33 kinds including enums, events,
+translation keys and tile sheets that never appear in script files.
 
 ## Related
 

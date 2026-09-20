@@ -1,0 +1,28 @@
+{
+  "author": "yourname",
+  "versionMin": "42.20.0",
+  "steamUser": "YOUR_STEAM_USERNAME",
+
+  "workshopDir": "~/Zomboid/Workshop",
+  "modsDir": "~/Zomboid/mods",
+  "steamcmd": "C:\\steamcmd\\steamcmd.exe",
+
+  "mods": [
+    {
+      "id": "example_mod",
+      "name": "Example Mod",
+      "version": "0.1.0",
+      "fileId": null,
+      "tags": ["Build 42", "Items"],
+      "description": "One paragraph, present tense: what it does, then what it pairs with. Changelogs belong in the push changenote, never here."
+    },
+    {
+      "id": "another_mod",
+      "name": "Another Mod",
+      "version": "1.2.0",
+      "fileId": 1234567890,
+      "tags": ["Build 42", "Balance", "Multiplayer"],
+      "description": "fileId is the Workshop file id. Leave it null until the first publish; first_publish.ps1 writes it back for you."
+    }
+  ]
+}

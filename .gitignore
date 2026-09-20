@@ -13,3 +13,6 @@ data/
 *.db
 *.lance/
 .env
+
+# generated reference lists - never commit these, they go stale and then lie
+tools/pz-bible/refs/
