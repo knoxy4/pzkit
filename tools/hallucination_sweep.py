@@ -3,14 +3,15 @@
 
 pzkit's validator only checks module-qualified refs (`Base.Foo`) on non-recipe
 blocks, so bare-name references in GrantedRecipes / XPBoosts / trait lists are
-invisible to it. That is how `Make_Metal_Drum` and `Basic Mechanics` shipped.
+invisible to it — which is how a phantom recipe name passes validation GREEN
+and then silently does nothing in game.
 
 Truth comes from the vanilla index (pzkit/data/vanilla.db) plus every name the
 scanned mods define themselves. Perk names are derived from vanilla's own
 xpAward/SkillRequired props, not from a hardcoded list.
 
-    python3 scripts/hallucination_sweep.py mods/
-    python3 scripts/hallucination_sweep.py --git-ref knx/badlands-characters
+    python3 tools/hallucination_sweep.py path/to/mods/
+    python3 tools/hallucination_sweep.py --git-ref some-branch
 """
 from __future__ import annotations
 

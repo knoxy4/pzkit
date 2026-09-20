@@ -14,19 +14,38 @@ entry names its evidence.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-RIG_CACHEDIR = "/home/knx/pzjarvis-rig"
-RIG_SERVERNAME = "pzjarvis-testrig"
-RIG_UNC = Path(r"\\wsl.localhost\Ubuntu\home\knx\pzjarvis-rig")
+# All paths are WSL-side (Linux) paths; the *_UNC pairs are how Windows reaches
+# them. Override any of these via environment variables — the defaults assume a
+# WSL2 Ubuntu install with the dedicated server under ~/pzserver.
+_WSL_USER = os.environ.get("PZRIG_WSL_USER", os.environ.get("USER", "knx"))
+_WSL_DISTRO = os.environ.get("PZRIG_WSL_DISTRO", "Ubuntu")
+_WSL_HOME = os.environ.get("PZRIG_WSL_HOME", f"/home/{_WSL_USER}")
+
+
+def _unc(linux_path: str) -> Path:
+    """Map a WSL Linux path to the UNC path Windows uses to reach it.
+
+    Built as one string rather than by joining Path parts, so the separators
+    stay backslashes even when this module is imported on a non-Windows host.
+    """
+    tail = linux_path.strip("/").replace("/", "\\")
+    return Path(rf"\\wsl.localhost\{_WSL_DISTRO}\{tail}")
+
+
+RIG_CACHEDIR = os.environ.get("PZRIG_CACHEDIR", f"{_WSL_HOME}/pzjarvis-rig")
+RIG_SERVERNAME = os.environ.get("PZRIG_SERVERNAME", "pzjarvis-testrig")
+RIG_UNC = _unc(RIG_CACHEDIR)
 # control files live OUTSIDE the cachedir: PZ treats cachedir root as its own
-CTL = "/home/knx/pzjarvis-ctl"
-CTL_UNC = Path(r"\\wsl.localhost\Ubuntu\home\knx\pzjarvis-ctl")
-PZSERVER = "/home/knx/pzserver"
+CTL = os.environ.get("PZRIG_CTL", f"{_WSL_HOME}/pzjarvis-ctl")
+CTL_UNC = _unc(CTL)
+PZSERVER = os.environ.get("PZRIG_SERVER_DIR", f"{_WSL_HOME}/pzserver")
 SENTINEL = "*** SERVER STARTED ****"
 
 # single-purpose launcher: bash stays alive through the spawn (a backgrounded
