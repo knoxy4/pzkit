@@ -12,13 +12,15 @@ Usage:
 
 Output: OK | CASE MISMATCH (real spelling returned) | NOT ON THAT CLASS
 (api only - method exists on listed classes; fine if one is a parent) |
-NOT FOUND + nearest candidates.
+NOT FOUND + nearest candidates (ranked by similarity to the name's
+last segment; empty when nothing is close enough to be a plausible typo).
 
 Rules: NOT FOUND is a hard stop - use a suggestion or redesign, never ship
 the name with a caveat. CASE MISMATCH is an error - PZ names are
 case-sensitive. `tile` accepts a sheet name or sheet_N (index range NOT
 validated). See README.md for provenance and what is not covered.
 """
+import difflib
 import os
 import sys
 
@@ -44,6 +46,12 @@ KINDS = {
 REFS = os.environ.get("PZ_BIBLE_REFS") or os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "refs"
 )
+# NOT FOUND suggestion tuning. EDIT_BUDGET is roughly how many typos a
+# candidate may be away, scaled by name length; MIN_SIM keeps very short
+# names from accepting anything. Below the floor we print nothing.
+MIN_SIM = float(os.environ.get("PZ_BIBLE_MIN_SIM") or 0.62)
+EDIT_BUDGET = 1.5
+PREFIX_BONUS = 0.05
 
 
 def load(kind):
@@ -59,13 +67,56 @@ def load(kind):
         return [ln.rstrip("\n") for ln in f if ln.strip()]
 
 
-def nearest(names, target):
-    t = target.lower()
-    hits = [n for n in names if t in n.lower()][:8]
-    if not hits and len(target) >= 4:
-        frag = t[:4]
-        hits = [n for n in names if frag in n.lower()][:8]
-    return hits
+def split_id(name):
+    """PZ ids are Module.Item, Class:method or Enum.VALUE - the discriminating
+    part is the tail. Returns (prefix, leaf); prefix is "" if undivided."""
+    for sep in (":", "."):
+        if sep in name:
+            head, _, tail = name.rpartition(sep)
+            return head, tail
+    return "", name
+
+
+def common_prefix_len(a, b):
+    n = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        n += 1
+    return n
+
+
+def nearest(names, target, limit=8):
+    """Best `limit` candidates, ranked by similarity to the leaf of `target`.
+
+    Compares leaf to leaf (Base.Nonsense is scored against the Axe in
+    Base.Axe), nudges candidates sharing the target's module/class prefix up,
+    and puts names that literally contain the typed leaf on top. The floor is
+    an edit budget: a long name has to match far more closely than a short one
+    to count as a typo. Returns [] when nothing clears it - no suggestion at
+    all beats eight wrong ones."""
+    prefix, leaf = split_id(target)
+    prefix, leaf = prefix.lower(), leaf.lower()
+    floor = max(MIN_SIM, 1.0 - EDIT_BUDGET / max(len(leaf), 1))
+    m = difflib.SequenceMatcher()
+    m.set_seq2(leaf)
+    scored = []
+    for n in names:
+        npre, cand = split_id(n)
+        cand = cand.lower()
+        bonus = PREFIX_BONUS if prefix and npre.lower() == prefix else 0.0
+        if leaf in cand:
+            scored.append((1, 1.0, 0, abs(len(cand) - len(leaf)), n))
+            continue
+        m.set_seq1(cand)
+        # length bound, then cheap upper bound, before the real O(n*m) ratio
+        if m.real_quick_ratio() < floor or m.quick_ratio() < floor:
+            continue
+        r = m.ratio()
+        if r >= floor:
+            scored.append((0, r + bonus, common_prefix_len(cand, leaf), 0, n))
+    scored.sort(key=lambda s: (-s[0], -s[1], -s[2], s[3], s[4]))
+    return [s[-1] for s in scored[:limit]]
 
 
 def verify(kind, name, quiet_miss=False):
