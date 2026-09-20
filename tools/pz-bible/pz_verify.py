@@ -54,14 +54,26 @@ EDIT_BUDGET = 1.5
 PREFIX_BONUS = 0.05
 
 
+def list_path(kind):
+    return os.path.join(REFS, KINDS[kind])
+
+
+def have_list(kind):
+    return os.path.exists(list_path(kind))
+
+
+def _missing_hint(path):
+    builder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_refs.py")
+    return (f"missing reference list: {path}\n"
+            "Generate the lists first:\n"
+            f"  python3 {builder} --game <ProjectZomboid dir>\n"
+            "Or set PZ_BIBLE_REFS to a directory that already has them.")
+
+
 def load(kind):
-    path = os.path.join(REFS, KINDS[kind])
+    path = list_path(kind)
     if not os.path.exists(path):
-        print(f"missing reference list: {path}\n"
-              "Generate the lists first:\n"
-              f"  python3 {os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_refs.py')}"
-              " --game <ProjectZomboid dir>\n"
-              "Or set PZ_BIBLE_REFS to a directory that already has them.")
+        print(_missing_hint(path))
         sys.exit(2)
     with open(path, encoding="utf-8", errors="replace") as f:
         return [ln.rstrip("\n") for ln in f if ln.strip()]
@@ -105,7 +117,10 @@ def nearest(names, target, limit=8):
         npre, cand = split_id(n)
         cand = cand.lower()
         bonus = PREFIX_BONUS if prefix and npre.lower() == prefix else 0.0
-        if leaf in cand:
+        # Containment only means something once the leaf is long enough to be
+        # distinctive: a one- or two-character leaf is inside half the list,
+        # which is the file-order noise this ranking exists to remove.
+        if len(leaf) >= 3 and leaf in cand:
             scored.append((1, 1.0, 0, abs(len(cand) - len(leaf)), n))
             continue
         m.set_seq1(cand)
@@ -176,9 +191,19 @@ def main(argv):
         print(f"no matches in [{rest[0]}] for {rest[1]}")
         return 1
     if cmd == "any":
-        ok = any([verify(k, rest[0], quiet_miss=True) for k in sorted(KINDS)])
+        present = [k for k in sorted(KINDS) if have_list(k)]
+        absent = [k for k in sorted(KINDS) if not have_list(k)]
+        if not present:
+            print(_missing_hint(list_path(sorted(KINDS)[0])))
+            return 2
+        ok = any([verify(k, rest[0], quiet_miss=True) for k in present])
         if not ok:
             print(f"NOT FOUND [any] {rest[0]}")
+            if absent:
+                # Say so: an unchecked kind is not the same as a verified miss,
+                # and NOT FOUND is documented as a hard stop.
+                print(f"  note: {len(absent)} kind(s) not checked - no list built: "
+                      + ", ".join(absent))
         return 0 if ok else 1
     if cmd not in KINDS:
         print(f"unknown kind: {cmd} | kinds: any, list, search, "

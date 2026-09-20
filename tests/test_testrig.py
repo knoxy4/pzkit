@@ -16,10 +16,10 @@ ERROR: General      f:0 st:1,200> Missing ThumpSound for breakable object fencin
 
 ANIM_PROBE = """\
 ERROR: General      f:0 st:1,400> AdvancedAnimator$1.visitFileFailed> Exception thrown
-\tjava.nio.file.NoSuchFileException: /rig/mods/pzj_x/42/media/AnimSets at UnixException.translateToIOException(null:-1).
+\tjava.nio.file.NoSuchFileException: /rig/mods/demo_x/42/media/AnimSets at UnixException.translateToIOException(null:-1).
 """
 
-MOD_MISSING = 'WARN : Mod          f:0 st:1,500 at ZomboidFileSystem.loadModAndRequired> required mod "pzj_ghost" not found\n'
+MOD_MISSING = 'WARN : Mod          f:0 st:1,500 at ZomboidFileSystem.loadModAndRequired> required mod "demo_ghost" not found\n'
 
 
 def test_normalize_strips_timestamps():
@@ -50,7 +50,7 @@ def test_anim_probe_lookahead_is_benign():
 def test_mod_not_found_fails_verdict():
     v = Verdict()
     _classify(MOD_MISSING, v, use_baseline=False)
-    assert any("MOD NOT LOADED: pzj_ghost" in e for e in v.errors)
+    assert any("MOD NOT LOADED: demo_ghost" in e for e in v.errors)
 
 
 def test_baseline_diff_suppresses_known_noise(tmp_path, monkeypatch):

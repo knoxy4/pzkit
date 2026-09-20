@@ -14,30 +14,44 @@ def _errors(rep):
 
 
 def test_scaffold_layout(tmp_path):
-    root = scaffold_mod("pzj_hello", tmp_path)
+    root = scaffold_mod("demo_hello", tmp_path)
     assert (root / "mod.info").is_file()
-    assert (root / "42" / "media" / "scripts" / "pzj_hello_items.txt").is_file()
+    assert (root / "42" / "media" / "scripts" / "demo_hello_items.txt").is_file()
     assert (root / "42" / "media" / "translations" / "EN" / "ItemName_EN.txt").is_file()
     assert (root / "common" / "media").is_dir()
 
 
 def test_scaffold_rejects_bad_ids(tmp_path):
+    # An unprefixed id is fine by default - a shared namespace is a project
+    # convention, not a Build 42 rule.
+    scaffold_mod("hello", tmp_path)
     with pytest.raises(ValueError):
-        scaffold_mod("hello", tmp_path)
-    scaffold_mod("pzj_hello", tmp_path)
+        scaffold_mod("bad id!", tmp_path)
+    with pytest.raises(ValueError):
+        scaffold_mod("", tmp_path)
+    scaffold_mod("demo_hello", tmp_path)
     with pytest.raises(FileExistsError):
-        scaffold_mod("pzj_hello", tmp_path)
+        scaffold_mod("demo_hello", tmp_path)
+
+
+def test_scaffold_enforces_prefix_when_configured(tmp_path, monkeypatch):
+    import pzkit.scaffold as sc
+
+    monkeypatch.setattr(sc, "MOD_PREFIX", "acme_")
+    with pytest.raises(ValueError):
+        sc.scaffold_mod("hello", tmp_path)
+    assert sc.scaffold_mod("acme_hello", tmp_path).name == "acme_hello"
 
 
 def test_hello_world_validates_green(tmp_path):
-    root = scaffold_mod("pzj_hello", tmp_path)
+    root = scaffold_mod("demo_hello", tmp_path)
     rep = validate_mod(root)
     assert rep.ok, [f.render() for f in _errors(rep)]
 
 
 def test_sabotage_unbalanced_brace_is_red(tmp_path):
-    root = scaffold_mod("pzj_broken", tmp_path)
-    script = root / "42" / "media" / "scripts" / "pzj_broken_items.txt"
+    root = scaffold_mod("demo_broken", tmp_path)
+    script = root / "42" / "media" / "scripts" / "demo_broken_items.txt"
     script.write_text(script.read_text().replace("}\n}", "}"), encoding="utf-8")
     rep = validate_mod(root)
     assert not rep.ok
@@ -45,7 +59,7 @@ def test_sabotage_unbalanced_brace_is_red(tmp_path):
 
 
 def test_sabotage_missing_translation_is_red(tmp_path):
-    root = scaffold_mod("pzj_broken2", tmp_path)
+    root = scaffold_mod("demo_broken2", tmp_path)
     (root / "42" / "media" / "translations" / "EN" / "ItemName_EN.txt").unlink()
     rep = validate_mod(root)
     assert not rep.ok
@@ -53,9 +67,9 @@ def test_sabotage_missing_translation_is_red(tmp_path):
 
 
 def test_sabotage_wrong_id_is_red(tmp_path):
-    root = scaffold_mod("pzj_broken3", tmp_path)
+    root = scaffold_mod("demo_broken3", tmp_path)
     mi = root / "mod.info"
-    mi.write_text(mi.read_text().replace("id=pzj_broken3", "id=pzj_other"), encoding="utf-8")
+    mi.write_text(mi.read_text().replace("id=demo_broken3", "id=demo_other"), encoding="utf-8")
     rep = validate_mod(root)
     assert not rep.ok
     assert any(f.code == "LAYOUT-id" for f in _errors(rep))
@@ -63,10 +77,10 @@ def test_sabotage_wrong_id_is_red(tmp_path):
 
 @pytest.mark.skipif(not HAS_INDEX, reason="vanilla index not built on this machine")
 def test_sabotage_phantom_ref_is_red(tmp_path):
-    root = scaffold_mod("pzj_broken4", tmp_path)
-    recipe = root / "42" / "media" / "scripts" / "pzj_broken4_recipes.txt"
+    root = scaffold_mod("demo_broken4", tmp_path)
+    recipe = root / "42" / "media" / "scripts" / "demo_broken4_recipes.txt"
     recipe.write_text(
-        """module pzj_broken4
+        """module demo_broken4
 {
     craftRecipe MakeNothing
     {
@@ -94,26 +108,28 @@ def test_sabotage_phantom_ref_is_red(tmp_path):
 def test_diff_vanilla_classifies(tmp_path):
     from pzkit.diff import diff_vanilla
 
-    root = scaffold_mod("pzj_diffy", tmp_path)
-    (root / "42" / "media" / "scripts" / "pzj_diffy_override.txt").write_text(
+    root = scaffold_mod("demo_diffy", tmp_path)
+    (root / "42" / "media" / "scripts" / "demo_diffy_override.txt").write_text(
         "module Base\n{\n    item PickAxe\n    {\n        Weight = 1.0,\n    }\n}\n",
         encoding="utf-8",
     )
     d = diff_vanilla(root)
     assert "item Base.PickAxe" in d["overrides"]
-    assert "item pzj_diffy.HelloDoodad" in d["new"]
+    assert "item demo_diffy.HelloDoodad" in d["new"]
 
 
 def test_lua_stage_never_silent_without_toolchain(tmp_path):
-    import shutil as _sh
+    from pzkit.validator import _lua_tool
 
-    root = scaffold_mod("pzj_lua", tmp_path)
+    root = scaffold_mod("demo_lua", tmp_path)
     (root / "42" / "media" / "lua" / "client" / "hello.lua").write_text(
         'print("hi")\n', encoding="utf-8"
     )
     rep = validate_mod(root)
     lua_findings = [f for f in rep.findings if f.code.startswith("LUA")]
-    if _sh.which("luacheck") is None and _sh.which("luac") is None:
+    # Ask the validator which tool it found rather than re-deriving it: it can
+    # reach luacheck through WSL, which is invisible to shutil.which here.
+    if _lua_tool() is None:
         assert any(f.code == "LUA-toolchain" and f.level == "SKIP" for f in lua_findings)
     else:
         assert not [f for f in lua_findings if f.level == "ERROR"]

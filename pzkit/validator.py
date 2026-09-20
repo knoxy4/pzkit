@@ -103,8 +103,9 @@ def _check_layout(mod: Path, rep: Report) -> dict[str, str]:
             rep.add("ERROR", "LAYOUT-id", f"mod.info id={info.get('id')!r} != folder {mod.name!r}")
         if not info.get("name"):
             rep.add("ERROR", "LAYOUT-name", "mod.info has no name=")
-    if not mod.name.startswith(MOD_PREFIX):
-        rep.add("ERROR", "LAYOUT-prefix", f"folder must start with {MOD_PREFIX!r} (CONVENTIONS §5)")
+    if MOD_PREFIX and not mod.name.startswith(MOD_PREFIX):
+        rep.add("ERROR", "LAYOUT-prefix",
+                f"folder must start with {MOD_PREFIX!r} (set by PZKIT_MOD_PREFIX)")
     if not (mod / "42").is_dir():
         rep.add("ERROR", "LAYOUT-42", "no 42/ versioned content dir")
     if not (mod / "common").is_dir():
@@ -233,7 +234,7 @@ def _check_translations(mod: Path, rep: Report, parsed: list[tuple[str, ParsedFi
                         rep.add(
                             "ERROR",
                             "TR-missing",
-                            f"no translation entry {key!r} (CONVENTIONS §5: day one)",
+                            f"no translation entry {key!r} - the game falls back to the raw id",
                         )
 
 

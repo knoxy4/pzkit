@@ -20,7 +20,7 @@ _REPO_MODS = Path(__file__).resolve().parents[2] / "mods"
 
 @mcp.tool
 def scaffold_mod(mod_id: str, display_name: str = "", description: str = "") -> str:
-    """Create a B42-correct mod skeleton under mods/ (pzj_ prefix enforced)."""
+    """Create a B42-correct mod skeleton under mods/."""
     from .scaffold import scaffold_mod as _scaffold
 
     path = _scaffold(mod_id, _REPO_MODS, display_name or None, description)

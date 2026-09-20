@@ -58,6 +58,19 @@ refs/items.txt` works. Exact, case-sensitive match means real.
 | `NOT ON THAT CLASS` (api) | The method exists, on the classes listed. Fine if one is a plausible parent — that is inheritance. An empty owner list means it does not exist. |
 | `NOT FOUND` | A hard stop. Take a suggested candidate or redesign. Never ship the name with a caveat. |
 
+`NOT FOUND` prints candidates ranked by similarity to the name's **last
+segment** — `Base.Nonsense` is scored against the `Axe` in `Base.Axe`, not
+against the whole string — with names sharing your module or class nudged up.
+The floor scales with length: a long name has to match far more closely to
+count as a typo. When nothing clears it you get no candidates at all, which is
+the honest answer; a list of eight wrong names just trains you to ignore the
+rule above. Set `PZ_BIBLE_MIN_SIM` (default `0.62`) to loosen or tighten it.
+
+In `any` mode, kinds whose list has not been built are **skipped, not treated as
+misses**, and named at the end. An unchecked kind is not a verified miss, and
+`NOT FOUND` is a hard stop — so it has to be clear which one you are looking
+at.
+
 One corollary, learned the hard way: `NOT FOUND` only counts if the reference
 set actually indexes that kind of file. Check coverage before writing a missing
 name up as a defect — an early version indexed no translation keys at all, so

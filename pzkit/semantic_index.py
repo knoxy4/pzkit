@@ -1,7 +1,7 @@
 """LanceDB semantic layer over the SQLite vanilla index — P1's fuzzy half.
 
 Embeds one document per named game block via LOCAL Ollama (nomic-embed-text);
-never a metered API (CONVENTIONS §10). Reads blocks from vanilla_index's DB —
+never a metered API. Reads blocks from vanilla_index's DB -
 it never re-parses scripts. Rebuild after every SQLite rebuild.
 """
 

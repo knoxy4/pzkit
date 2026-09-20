@@ -23,7 +23,7 @@ for n in names:
     print(f"  {n+'.png':32} {'MISSING' if not p.exists() else str(png_size(p)) + f'  {p.stat().st_size}B'}")
 
 print("\n=== SIZE DISTRIBUTION across Item_*.png ===")
-from collections import Counter
+from collections import Counter  # noqa: E402 - probe script, read top to bottom
 c = Counter()
 for p in list(m.glob("Item_*.png"))[:4000]:
     s = png_size(p)

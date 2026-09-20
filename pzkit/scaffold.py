@@ -1,16 +1,23 @@
-"""Scaffold a B42-correct mod skeleton per CONVENTIONS §5.
+"""Scaffold a B42-correct mod skeleton.
 
-Layout: mod.info + common/ + 42/media/{scripts,lua,translations}. The pzj_
-prefix is law until the server-name rename PR. Example item ships references
-verified against the vanilla index (Icon/model AlarmClock) so a fresh scaffold
-validates green end to end, translations included.
+Layout: mod.info + common/ + 42/media/{scripts,lua,translations}. The example
+item ships references verified against the vanilla index (Icon/model
+AlarmClock), so a fresh scaffold validates green end to end, translations
+included.
+
+Mod ids are unconstrained by default. Set PZKIT_MOD_PREFIX if your project
+requires every mod to share a namespace - scaffold and validate will then both
+enforce it.
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-MOD_PREFIX = "ikag_"   # renamed from pzj_ (PR #8) - permanent namespace, decoupled from server branding
+# Empty by default: a shared namespace is a project convention, not a property
+# of Build 42, and hardcoding one makes this tool refuse everyone else's mods.
+MOD_PREFIX = os.environ.get("PZKIT_MOD_PREFIX", "")
 
 _MOD_INFO = """\
 name={display_name}
@@ -47,9 +54,11 @@ def scaffold_mod(
     with_example_item: bool = True,
 ) -> Path:
     """Create the skeleton; returns the mod dir. Refuses bad ids and existing dirs."""
-    if not mod_id.startswith(MOD_PREFIX):
-        raise ValueError(f"mod id must start with {MOD_PREFIX!r} (CONVENTIONS §5): {mod_id!r}")
-    if not mod_id.replace("_", "").isalnum():
+    if MOD_PREFIX and not mod_id.startswith(MOD_PREFIX):
+        raise ValueError(
+            f"mod id must start with {MOD_PREFIX!r} (set by PZKIT_MOD_PREFIX): {mod_id!r}"
+        )
+    if not mod_id or not mod_id.replace("_", "").isalnum():
         raise ValueError(f"mod id must be alphanumeric/underscore: {mod_id!r}")
     root = Path(mods_root) / mod_id
     if root.exists():

@@ -1,8 +1,8 @@
-﻿# ws_deploy.ps1 â€” one-command PZ Workshop publish via SteamCMD
-# Usage:  .\ws_deploy.ps1 -ModFolder "C:\path\to\AlphaShipment" -ChangeNote "v1.1 fixed dist lists"
-# First run: steamcmd will prompt for password + Steam Guard IN YOUR TERMINAL â€” creds are
+# ws_deploy.ps1 - one-command PZ Workshop publish via SteamCMD
+# Usage:  .\ws_deploy.ps1 -ModFolder "C:\path\to\YourMod" -ChangeNote "v1.1 fixed dist lists"
+# First run: steamcmd will prompt for password + Steam Guard IN YOUR TERMINAL - creds are
 # cached by steamcmd after that; this script never stores or sees them.
-# First publish: leave PublishedFileId=0 â€” Steam creates the item and prints the new ID
+# First publish: leave PublishedFileId=0 - Steam creates the item and prints the new ID
 # in the output. Paste it into $PublishedFileId below for all future updates.
 
 param(

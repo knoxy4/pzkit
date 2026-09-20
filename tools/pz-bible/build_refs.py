@@ -42,7 +42,7 @@ EVENTS_MD = "https://raw.githubusercontent.com/demiurgeQuantified/PZEventDoc/dev
 # case-insensitive in PowerShell. Keeping that behaviour matters: script blocks
 # in the wild are written `Item`, `item` and `ITEM`. The three places the
 # original deliberately used -cmatch are case-sensitive here too, and marked.
-I = re.IGNORECASE
+ICASE = re.IGNORECASE
 
 
 def _sorted_unique(values) -> list[str]:
@@ -107,27 +107,27 @@ def _lua_files(game: Path, mod_roots: list[Path]) -> list[Path]:
 # script blocks
 # --------------------------------------------------------------------------
 
-_RE_MODULE = re.compile(r"^\s*module\s+([A-Za-z0-9_]+)", I)
+_RE_MODULE = re.compile(r"^\s*module\s+([A-Za-z0-9_]+)", ICASE)
 _SCRIPT_RULES = [
-    ("item", re.compile(r"^\s*item\s+([A-Za-z0-9_]+)", I)),
-    ("sound", re.compile(r"^\s*sound\s+([A-Za-z0-9_]+)", I)),
-    ("model", re.compile(r"^\s*model\s+([A-Za-z0-9_]+)", I)),
-    ("recipe", re.compile(r"^\s*(?:craftRecipe|entity)\s+([A-Za-z0-9_]+)", I)),
-    ("evolvedrecipe", re.compile(r"^\s*evolvedrecipe\s+([A-Za-z0-9_ ]+?)\s*\{?\s*$", I)),
-    ("fluid", re.compile(r"^\s*fluid\s+([A-Za-z0-9_]+)", I)),
-    ("energy", re.compile(r"^\s*energy\s+([A-Za-z0-9_]+)", I)),
-    ("attachment", re.compile(r"^\s*attachment\s+([A-Za-z0-9_]+)", I)),
-    ("timedaction", re.compile(r"^\s*timedAction\s+([A-Za-z0-9_]+)", I)),
-    ("animscript", re.compile(r"^\s*anim\s+([A-Za-z0-9_]+)", I)),
-    ("vehiclepart", re.compile(r"^\s*part\s+([A-Za-z0-9_]+)", I)),
-    ("model2", re.compile(r"(?:StaticModel|WorldStaticModel)\s*=\s*([A-Za-z0-9_.]+)\s*,", I)),
-    ("itemtype", re.compile(r"ItemType\s*=\s*([a-z:]+)\s*,", I)),
-    ("category", re.compile(r"DisplayCategory\s*=\s*([A-Za-z0-9_]+)\s*,", I)),
-    ("icon", re.compile(r"^\s*Icon\s*=\s*([A-Za-z0-9_]+)\s*,", I)),
-    ("tags", re.compile(r"^\s*Tags\s*=\s*([^,]+),", I)),
+    ("item", re.compile(r"^\s*item\s+([A-Za-z0-9_]+)", ICASE)),
+    ("sound", re.compile(r"^\s*sound\s+([A-Za-z0-9_]+)", ICASE)),
+    ("model", re.compile(r"^\s*model\s+([A-Za-z0-9_]+)", ICASE)),
+    ("recipe", re.compile(r"^\s*(?:craftRecipe|entity)\s+([A-Za-z0-9_]+)", ICASE)),
+    ("evolvedrecipe", re.compile(r"^\s*evolvedrecipe\s+([A-Za-z0-9_ ]+?)\s*\{?\s*$", ICASE)),
+    ("fluid", re.compile(r"^\s*fluid\s+([A-Za-z0-9_]+)", ICASE)),
+    ("energy", re.compile(r"^\s*energy\s+([A-Za-z0-9_]+)", ICASE)),
+    ("attachment", re.compile(r"^\s*attachment\s+([A-Za-z0-9_]+)", ICASE)),
+    ("timedaction", re.compile(r"^\s*timedAction\s+([A-Za-z0-9_]+)", ICASE)),
+    ("animscript", re.compile(r"^\s*anim\s+([A-Za-z0-9_]+)", ICASE)),
+    ("vehiclepart", re.compile(r"^\s*part\s+([A-Za-z0-9_]+)", ICASE)),
+    ("model2", re.compile(r"(?:StaticModel|WorldStaticModel)\s*=\s*([A-Za-z0-9_.]+)\s*,", ICASE)),
+    ("itemtype", re.compile(r"ItemType\s*=\s*([a-z:]+)\s*,", ICASE)),
+    ("category", re.compile(r"DisplayCategory\s*=\s*([A-Za-z0-9_]+)\s*,", ICASE)),
+    ("icon", re.compile(r"^\s*Icon\s*=\s*([A-Za-z0-9_]+)\s*,", ICASE)),
+    ("tags", re.compile(r"^\s*Tags\s*=\s*([^,]+),", ICASE)),
 ]
-_RE_VEHICLE = re.compile(r"^\s*vehicle\s+([A-Za-z0-9_]+)", I)
-_RE_FIXING = re.compile(r"^\s*fixing\s+([A-Za-z0-9_ ]+?)\s*$", I)
+_RE_VEHICLE = re.compile(r"^\s*vehicle\s+([A-Za-z0-9_]+)", ICASE)
+_RE_FIXING = re.compile(r"^\s*fixing\s+([A-Za-z0-9_ ]+?)\s*$", ICASE)
 
 
 def scan_scripts(files: list[Path]) -> dict[str, list[str]]:
@@ -199,7 +199,7 @@ def scan_distributions(game: Path) -> tuple[list[str], list[str], list[str]]:
 
 
 def scan_perks(lua_files: list[Path]) -> list[str]:
-    rx = re.compile(r"Perks\.([A-Za-z0-9_]+)", I)
+    rx = re.compile(r"Perks\.([A-Za-z0-9_]+)", ICASE)
     skip = {"fromstring", "get", "max", "none"}
     found = []
     for f in lua_files:
@@ -210,8 +210,8 @@ def scan_perks(lua_files: list[Path]) -> list[str]:
 
 
 def scan_lua_classes_and_functions(lua_files: list[Path]) -> tuple[list[str], list[str]]:
-    rx_cls = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*[A-Za-z0-9_]+:derive\(", I | re.M)
-    rx_fn = re.compile(r"^function ([A-Za-z][A-Za-z0-9_]*)\s*\(", I | re.M)
+    rx_cls = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*[A-Za-z0-9_]+:derive\(", ICASE | re.M)
+    rx_fn = re.compile(r"^function ([A-Za-z][A-Za-z0-9_]*)\s*\(", ICASE | re.M)
     classes, fns = [], []
     for f in lua_files:
         text = _read_text(f)
@@ -228,7 +228,7 @@ def scan_sandboxvars(game: Path) -> list[str]:
 
 
 def scan_foragecats(game: Path) -> list[str]:
-    rx = re.compile(r'^\s*name\s*=\s*"([^"]+)"', I)
+    rx = re.compile(r'^\s*name\s*=\s*"([^"]+)"', ICASE)
     found = []
     for f in (game / "media" / "lua" / "shared" / "Foraging").rglob("*.lua"):
         for line in _read_lines(f):
@@ -331,10 +331,10 @@ def scan_umbrella(umb: Path) -> dict[str, list[str]]:
     lua = [p for p in umb.rglob("*.lua") if p.is_file()]
     if not lua:
         return {}
-    rx_method = re.compile(r"^function ([A-Za-z0-9_]+)[:.]([A-Za-z0-9_]+)", I | re.M)
-    rx_enum = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z0-9_]+)\s*=\s*nil", I | re.M)
-    rx_global = re.compile(r"^function ([A-Za-z0-9_]+)\s*\(", I | re.M)
-    rx_field = re.compile(r"---@field ([A-Za-z0-9_]+)", I)
+    rx_method = re.compile(r"^function ([A-Za-z0-9_]+)[:.]([A-Za-z0-9_]+)", ICASE | re.M)
+    rx_enum = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z0-9_]+)\s*=\s*nil", ICASE | re.M)
+    rx_global = re.compile(r"^function ([A-Za-z0-9_]+)\s*\(", ICASE | re.M)
+    rx_field = re.compile(r"---@field ([A-Za-z0-9_]+)", ICASE)
 
     api, enums, globals_, perks = [], [], [], []
     for f in lua:

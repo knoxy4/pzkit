@@ -1,4 +1,8 @@
-"""64->32 nearest-neighbour downscale for ikag_mycology icons. Masters preserved."""
+"""64->32 nearest-neighbour downscale for PZ inventory icons. Masters preserved.
+
+PZ inventory icons render at 32x32. Build at 64, downscale here, then look at
+the result at true size before believing it.
+"""
 import os
 import pathlib
 import shutil

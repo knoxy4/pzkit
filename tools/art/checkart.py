@@ -2,7 +2,6 @@ import os
 import sys
 import pathlib
 import struct
-import zlib
 
 d = pathlib.Path(
     sys.argv[1] if len(sys.argv) > 1 else os.environ.get("PZ_TEXTURES_DIR", "")

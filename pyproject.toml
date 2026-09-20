@@ -22,3 +22,9 @@ packages = ["pzkit"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+# Real errors only. The broader style rules flag a lot of deliberate choices in
+# the standalone probe scripts (blind excepts around optional sources, late
+# imports), and a lint gate nobody can keep green stops being a gate.
+select = ["E4", "E7", "E9", "F"]

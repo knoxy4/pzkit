@@ -16,6 +16,7 @@ xpAward/SkillRequired props, not from a hardcoded list.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sqlite3
 import subprocess
@@ -25,7 +26,24 @@ from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-DB = REPO / "pzkit" / "data" / "vanilla.db"
+
+
+def _default_db():
+    """Use pzkit's own answer so the two never drift apart again.
+
+    This script recomputed the path independently and silently stopped finding
+    the database when the package layout changed.
+    """
+    try:
+        sys.path.insert(0, str(REPO))
+        from pzkit.vanilla_index import default_db_path
+        return default_db_path()
+    except Exception:
+        env = os.environ.get("PZKIT_DB")
+        return Path(env) if env else REPO / "data" / "vanilla.db"
+
+
+DB = _default_db()
 
 RECIPE_KEYS = {"GrantedRecipes", "LearnedRecipes", "TeachedRecipes", "RecipeList"}
 PERK_KEYS = {"XPBoosts", "xpAward", "SkillRequired", "AutoLearnAll", "AutoLearnAny"}

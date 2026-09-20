@@ -92,6 +92,8 @@ Everything is environment variables; nothing is hardcoded to a machine.
 | `OLLAMA_URL` | `http://127.0.0.1:11434` | Local embedding endpoint. |
 | `COMFYUI_URL` | `http://127.0.0.1:8288` | Local image generation, for the art helpers. |
 | `PZ_TEXTURES_DIR` | — | Default textures directory for `tools/art/` scripts (each also takes a path argument). |
+| `PZKIT_MOD_PREFIX` | *(none)* | Require every mod id and folder to start with this. Unset by default — a shared namespace is a project convention, not a Build 42 rule. `scaffold` and `validate` both honour it. |
+| `PZ_BIBLE_MIN_SIM` | `0.62` | Similarity floor for `pz_verify.py` suggestions. |
 | `PZ_LUACHECKRC` | `.luacheckrc` | Where `tools/probe/pzglobals.py` writes its generated globals list. |
 
 The boot-test rig assumes a WSL2 install with the dedicated server under
