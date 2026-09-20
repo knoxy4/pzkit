@@ -64,11 +64,23 @@ _ITEM_FQN = re.compile(r"^[A-Za-z_]\w*\.[A-Za-z_][\w.]*$")
 
 
 def default_scripts_path() -> Path | None:
+    """Locate media/scripts, preferring PZ_SCRIPTS_DIR.
+
+    The fallback probes a WSL2 dedicated-server install, which is a convenience
+    for one common setup and not a requirement - set PZ_SCRIPTS_DIR and none of
+    this runs.
+    """
     env = os.environ.get("PZ_SCRIPTS_DIR")
     if env:
         return Path(env)
-    for distro in ("Ubuntu", "Ubuntu-24.04"):
-        p = Path(rf"\\wsl.localhost\{distro}\home\knx\pzserver\media\scripts")
+    user = os.environ.get("PZ_WSL_USER") or os.environ.get("USER") or os.environ.get("USERNAME")
+    if not user:
+        return None
+    distros = [os.environ["PZ_WSL_DISTRO"]] if os.environ.get("PZ_WSL_DISTRO") else [
+        "Ubuntu", "Ubuntu-24.04",
+    ]
+    for distro in distros:
+        p = Path(rf"\\wsl.localhost\{distro}\home\{user}\pzserver\media\scripts")
         if p.is_dir():
             return p
     return None

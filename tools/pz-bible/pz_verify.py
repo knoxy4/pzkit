@@ -49,7 +49,11 @@ REFS = os.environ.get("PZ_BIBLE_REFS") or os.path.join(
 def load(kind):
     path = os.path.join(REFS, KINDS[kind])
     if not os.path.exists(path):
-        print(f"missing reference {path} - regenerate on the KNX box")
+        print(f"missing reference list: {path}\n"
+              "Generate the lists first:\n"
+              f"  python3 {os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_refs.py')}"
+              " --game <ProjectZomboid dir>\n"
+              "Or set PZ_BIBLE_REFS to a directory that already has them.")
         sys.exit(2)
     with open(path, encoding="utf-8", errors="replace") as f:
         return [ln.rstrip("\n") for ln in f if ln.strip()]

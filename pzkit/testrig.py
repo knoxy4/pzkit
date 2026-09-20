@@ -24,7 +24,8 @@ from pathlib import Path
 # All paths are WSL-side (Linux) paths; the *_UNC pairs are how Windows reaches
 # them. Override any of these via environment variables — the defaults assume a
 # WSL2 Ubuntu install with the dedicated server under ~/pzserver.
-_WSL_USER = os.environ.get("PZRIG_WSL_USER", os.environ.get("USER", "knx"))
+_WSL_USER = (os.environ.get("PZRIG_WSL_USER") or os.environ.get("USER")
+             or os.environ.get("USERNAME") or "pzuser")
 _WSL_DISTRO = os.environ.get("PZRIG_WSL_DISTRO", "Ubuntu")
 _WSL_HOME = os.environ.get("PZRIG_WSL_HOME", f"/home/{_WSL_USER}")
 
