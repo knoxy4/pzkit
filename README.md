@@ -82,6 +82,20 @@ Everything is environment variables; nothing is hardcoded to a machine.
 | `OLLAMA_URL` | `http://127.0.0.1:11434` | Local embedding endpoint. |
 | `COMFYUI_URL` | `http://127.0.0.1:8288` | Local image generation, for the art helpers. |
 | `PZ_TEXTURES_DIR` | — | Default textures directory for `tools/art/` scripts (each also takes a path argument). |
+| `PZ_LUACHECKRC` | `.luacheckrc` | Where `tools/probe/pzglobals.py` writes its generated globals list. |
+
+The boot-test rig assumes a WSL2 install with the dedicated server under
+`~/pzserver`. Override any of it:
+
+| Variable | Default | What |
+|---|---|---|
+| `PZRIG_WSL_DISTRO` | `Ubuntu` | Distro name, used to build the `\\wsl.localhost\...` path Windows reaches the rig through. |
+| `PZRIG_WSL_USER` | `$USER` | Linux user whose home holds the rig. |
+| `PZRIG_WSL_HOME` | `/home/$USER` | Overrides the two above outright. |
+| `PZRIG_SERVER_DIR` | `~/pzserver` | The dedicated server install. |
+| `PZRIG_CACHEDIR` | `~/pzjarvis-rig` | Isolated `-cachedir` so the rig never touches a live server. |
+| `PZRIG_CTL` | `~/pzjarvis-ctl` | Control and log files, deliberately outside the cachedir. |
+| `PZRIG_SERVERNAME` | `pzjarvis-testrig` | Server name the rig boots under. |
 
 ## A note on ground truth
 
