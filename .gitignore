@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+
+# generated indexes and local data
+data/
+*.db
+*.lance/
+.env
