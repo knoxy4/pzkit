@@ -85,8 +85,8 @@ def _check_keyed_refs(mod: Path, rep: Report, db_path: Path | None) -> None:
                 f"rebuild with `pzkit index build` if the game has updated")
     scripts = [(str(p.relative_to(mod)), p.read_text(encoding="utf-8", errors="replace"))
                for p in _script_files(mod)]
-    for sev, code, line, msg in refcheck.check(scripts, Path(db)):
-        rep.add(sev, code, msg, line=line)
+    for sev, code, rel, line, msg in refcheck.check(scripts, Path(db)):
+        rep.add(sev, code, msg, file=rel, line=line)
 
 
 def _check_layout(mod: Path, rep: Report) -> dict[str, str]:

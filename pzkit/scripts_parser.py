@@ -144,7 +144,11 @@ def parse_script(text: str, relpath: str = "<string>") -> ParsedFile:
             pending.clear()
             stmt_line = line
         else:
-            if not pending and not ch.isspace():
+            if not pending:
+                # don't buffer leading whitespace: it would pin stmt_line to the
+                # previous '{' or ',' and report every statement a line early
+                if ch.isspace():
+                    continue
                 stmt_line = line
             pending.append(ch)
     if stack:
